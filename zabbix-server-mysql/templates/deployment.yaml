@@ -30,175 +30,141 @@ spec:
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
-{{- include "zabbix-server-mysql.imagePullSecrets" . | indent 6 }}
       containers:
       - name: zabbix-server-mysql
         image: {{ template "zabbix-server-mysql.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         env:
-        - name: MARIADB_HOST
-        {{- if .Values.mariadb.enabled }}
+        - name: DB_SERVER_HOST
           value: {{ template "mariadb.fullname" . }}
-        {{- else }}
-          value: {{ .Values.externalDatabase.host | quote }}
-        {{- end }}
-        - name: MARIADB_PORT_NUMBER
-        {{- if .Values.mariadb.enabled }}
+        - name: DB_SERVER_PORT
           value: "3306"
-        {{- else }}
-          value: {{ .Values.externalDatabase.port | quote }}
-        {{- end }}
-        - name: WORDPRESS_DATABASE_NAME
-        {{- if .Values.mariadb.enabled }}
+        - name: MYSQL_DATABASE
           value: {{ .Values.mariadb.db.name | quote }}
-        {{- else }}
-          value: {{ .Values.externalDatabase.database | quote }}
-        {{- end }}
-        - name: WORDPRESS_DATABASE_USER
-        {{- if .Values.mariadb.enabled }}
+        - name: MYSQL_USER
           value: {{ .Values.mariadb.db.user | quote }}
-        {{- else }}
-          value: {{ .Values.externalDatabase.user | quote }}
-        {{- end }}
-        - name: WORDPRESS_DATABASE_PASSWORD
+        - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-            {{- if .Values.mariadb.enabled }}
               name: {{ template "mariadb.fullname" . }}
               key: mariadb-password
-            {{- else }}
-              name: {{ printf "%s-%s" .Release.Name "externaldb" }}
-              key: db-password
-            {{- end }}
-        - name: WORDPRESS_USERNAME
-          value: {{ .Values.wordpressUsername | quote }}
-        - name: WORDPRESS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "wordpress.fullname" . }}
-              key: wordpress-password
-        - name: WORDPRESS_EMAIL
-          value: {{ .Values.wordpressEmail | quote }}
-        - name: WORDPRESS_FIRST_NAME
-          value: {{ .Values.wordpressFirstName | quote }}
-        - name: WORDPRESS_LAST_NAME
-          value: {{ .Values.wordpressLastName | quote }}
-        - name: WORDPRESS_HTACCESS_OVERRIDE_NONE
-          value: {{ ternary "yes" "no" .Values.allowOverrideNone | quote }}
-        - name: WORDPRESS_BLOG_NAME
-          value: {{ .Values.wordpressBlogName | quote }}
-        - name: WORDPRESS_SKIP_INSTALL
-          value: {{ ternary "yes" "no" .Values.wordpressSkipInstall | quote }}
-        - name: WORDPRESS_TABLE_PREFIX
-          value: {{ .Values.wordpressTablePrefix | quote }}
-        - name: WORDPRESS_SCHEME
-          value: {{ .Values.wordpressScheme | quote }}
-        {{- if .Values.smtpHost }}
-        - name: SMTP_HOST
-          value: {{ .Values.smtpHost | quote }}
-        {{- end }}
-        {{- if .Values.smtpPort }}
-        - name: SMTP_PORT
-          value: {{ .Values.smtpPort | quote }}
-        {{- end }}
-        {{- if .Values.smtpUser }}
-        - name: SMTP_USER
-          value: {{ .Values.smtpUser | quote }}
-        {{- end }}
-        {{- if .Values.smtpPassword }}
-        - name: SMTP_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "wordpress.fullname" . }}
-              key: smtp-password
-        {{- end }}
-        {{- if .Values.smtpUsername }}
-        - name: SMTP_USERNAME
-          value: {{ .Values.smtpUsername | quote }}
-        {{- end }}
-        {{- if .Values.smtpProtocol }}
-        - name: SMTP_PROTOCOL
-          value: {{ .Values.smtpProtocol | quote }}
-        {{- end }}
         ports:
-        - name: http
-          containerPort: 80
-        - name: https
-          containerPort: 443
-        livenessProbe:
-          httpGet:
-            path: /wp-login.php
-            port: {{ ternary "https" "http" .Values.healthcheckHttps }}
-            {{- if .Values.healthcheckHttps }}
-            scheme: HTTPS
-            {{- end }}
-          {{- if .Values.livenessProbeHeaders }}
-            httpHeaders:
-{{ toYaml .Values.livenessProbeHeaders | indent 14 }}
-          {{- end }}
-{{ toYaml .Values.livenessProbe | indent 10 }}
-        readinessProbe:
-          httpGet:
-            path: /wp-login.php
-            port: {{ ternary "https" "http" .Values.healthcheckHttps }}
-            {{- if .Values.healthcheckHttps }}
-            scheme: HTTPS
-            {{- end }}
-          {{- if .Values.readinessProbeHeaders }}
-            httpHeaders:
-{{ toYaml .Values.readinessProbeHeaders | indent 14 }}
-          {{- end }}
-{{ toYaml .Values.readinessProbe | indent 10 }}
+        - name: zabbix-trapper
+          containerPort: 10051
         volumeMounts:
-        - mountPath: /bitnami/wordpress
-          name: wordpress-data
-          subPath: wordpress
-        {{- if and .Values.allowOverrideNone .Values.customHTAccessCM}}
-        - mountPath: /opt/bitnami/wordpress/wordpress-htaccess.conf
-          name: custom-htaccess
-          subPath: wordpress-htaccess.conf
+        {{- if .Values.persistence.alertscripts.enabled }}
+        - mountPath: /var/lib/zabbix/alertscripts
+          name: alertscripts
+        {{- end }}
+        {{- if .Values.persistence.externalscripts.enabled }}
+        - mountPath: /var/lib/zabbix/externalscripts
+          name: externalscripts
+        {{- end }}
+        {{- if .Values.persistence.enc.enabled }}
+        - mountPath: /var/lib/zabbix/enc
+          name: enc
+        {{- end }}
+        {{- if .Values.persistence.mibs.enabled }}
+        - mountPath: /var/lib/zabbix/mibs
+          name: mibs
+        {{- end }}
+        {{- if .Values.persistence.modules.enabled }}
+        - mountPath: /var/lib/zabbix/modules
+          name: modules
+        {{- end }}
+        {{- if .Values.persistence.snmptraps.enabled }}
+        - mountPath: /var/lib/zabbix/snmptraps
+          name: snmptraps
+        {{- end }}
+        {{- if .Values.persistence.ssh_keys.enabled }}
+        - mountPath: /var/lib/zabbix/ssh_keys
+          name: ssh-keys
+        {{- end }}
+        {{- if .Values.persistence.ssl.certs.enabled }}
+        - mountPath: /var/lib/zabbix/ssl/certs
+          name: ssl-certs
+        {{- end }}
+        {{- if .Values.persistence.ssl.keys.enabled }}
+        - mountPath: /var/lib/zabbix/ssl/keys
+          name: ssl-keys
+        {{- end }}
+        {{- if .Values.persistence.ssl.ssl_ca.enabled }}
+        - mountPath: /var/lib/zabbix/ssl/ssl_ca
+          name: ssl-ssl_ca
         {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-{{- if .Values.metrics.enabled }}
-      - name: metrics
-        image: {{ template "wordpress.metrics.image" . }}
-        imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
-        command: [ '/bin/apache_exporter', '-scrape_uri', 'http://status.localhost:80/server-status/?auto']
-        ports:
-        - name: metrics
-          containerPort: 9117
-        livenessProbe:
-          httpGet:
-            path: /metrics
-            port: metrics
-          initialDelaySeconds: 15
-          timeoutSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /metrics
-            port: metrics
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
-        resources:
-{{ toYaml .Values.metrics.resources | indent 10 }}
-{{- end }}
-{{- if .Values.sidecars }}
-{{ toYaml .Values.sidecars | indent 6 }}
-{{- end }}
       volumes:
-      {{- if and .Values.allowOverrideNone .Values.customHTAccessCM}}
-      - name: custom-htaccess
-        configMap:
-          name: {{ template "wordpress.customHTAccessCM" . }}
-      {{- end }}
-      - name: wordpress-data
-      {{- if .Values.persistence.enabled }}
+      - name: alertscripts
+      {{- if .Values.persistence.alertscripts.enabled }}
         persistentVolumeClaim:
-          claimName: {{ .Values.persistence.existingClaim | default (include "wordpress.fullname" .) }}
+          claimName: {{ .Values.persistence.alertscripts.claimName }}
       {{- else }}
         emptyDir: {}
-      {{ end }}
+      {{- end }}
+      - name: externalscripts
+      {{- if .Values.persistence.externalscripts.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.externalscripts.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: enc
+      {{- if .Values.persistence.enc.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.enc.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: mibs
+      {{- if .Values.persistence.mibs.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.mibs.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: modules
+      {{- if .Values.persistence.modules.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.modules.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: snmptraps
+      {{- if .Values.persistence.snmptraps.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.snmptraps.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: ssh-keys
+      {{- if .Values.persistence.ssh_keys.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.ssh_keys.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: ssl-certs
+      {{- if .Values.persistence.ssl.certs.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.ssl.certs.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: ssl-keys
+      {{- if .Values.persistence.ssl.keys.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.ssl.keys.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: ssl-ssl-ca
+      {{- if .Values.persistence.ssl.ssl_ca.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.ssl.ssl_ca.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}

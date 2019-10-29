@@ -1,13 +1,3 @@
-## Global Docker image parameters
-## Please, note that this will override the image parameters, including dependencies, configured to use the global value
-## Current available global Docker image parameters: imageRegistry and imagePullSecrets
-##
-# global:
-#   imageRegistry: myRegistryName
-#   imagePullSecrets:
-#     - myRegistryKeySecretName
-#   storageClass: myStorageClass
-
 ## Bitnami WordPress image version
 ## ref: https://hub.docker.com/r/bitnami/wordpress/tags/
 ##
@@ -70,8 +60,6 @@ replicaCount: 1
 ## https://github.com/helm/charts/blob/master/stable/mariadb/values.yaml
 ##
 mariadb:
-  ## Whether to deploy a mariadb server to satisfy the applications database requirements. To use an external database set this to false and configure the externalDatabase parameters
-  enabled: true
   ## Disable MariaDB replication
   replication:
     enabled: false
@@ -117,20 +105,6 @@ service:
   # TCP
   port: 10051
 
-## Configure extra options for liveness and readiness probes
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
-livenessProbe:
-  initialDelaySeconds: 120
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 6
-  successThreshold: 1
-readinessProbe:
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 6
-  successThreshold: 1
 ## If using an HTTPS-terminating load-balancer, the probes may need to behave
 ## like the balancer to prevent HTTP 302 responses.  According to the Kubernetes
 ## docs, 302 should be considered "successful", but this issue on GitHub
@@ -155,50 +129,57 @@ persistence:
   ##
   # storageClass: "-"
   ##
-  ## If you want to reuse an existing claim, you can pass the name of the PVC using
-  ## the existingClaim variable
-  # existingClaim: your-claim
   alertscripts:
     enabled: false
     accessMode: ReadWriteOnce
     size: 10Mi
+    claimName: alertscripts
   externalscripts:
     enabled: false
     accessMode: ReadWriteOnce
     size: 10Mi
+    claimName: externalscripts
   enc:
     enabled: false
     accessMode: ReadWriteOnce
     size: 10Mi
+    claimName: enc
   mibs:
     enabled: false
     accessMode: ReadWriteOnce
     size: 10Mi
+    claimName: mibs
   modules:
     enabled: false
     accessMode: ReadWriteOnce
     size: 10Mi
+    claimName: modules
   snmptraps:
     enabled: false
     accessMode: ReadWriteOnce
     size: 10Mi
+    claimName: snmptraps
   ssh_keys:
     enabled: false
     accessMode: ReadWriteOnce
     size: 10Mi
+    claimName: ssh-keys
   ssl:
     certs:
       enabled: false
       accessMode: ReadWriteOnce
       size: 10Mi
+      claimName: ssl-certs
     keys:
       enabled: false
       accessMode: ReadWriteOnce
       size: 10Mi
+      claimName: ssl-keys
     ssl_ca:
       enabled: false
       accessMode: ReadWriteOnce
       size: 10Mi
+      claimName: ssl-ssl-ca
 
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
