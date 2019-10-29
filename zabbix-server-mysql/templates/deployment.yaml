@@ -90,7 +90,7 @@ spec:
         {{- end }}
         {{- if .Values.persistence.ssl.ssl_ca.enabled }}
         - mountPath: /var/lib/zabbix/ssl/ssl_ca
-          name: ssl-ssl_ca
+          name: ssl-ssl-ca
         {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}

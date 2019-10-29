@@ -132,53 +132,53 @@ persistence:
   alertscripts:
     enabled: false
     accessMode: ReadWriteOnce
-    size: 10Mi
+    size: 100Mi
     claimName: alertscripts
   externalscripts:
     enabled: false
     accessMode: ReadWriteOnce
-    size: 10Mi
+    size: 100Mi
     claimName: externalscripts
   enc:
     enabled: false
     accessMode: ReadWriteOnce
-    size: 10Mi
+    size: 100Mi
     claimName: enc
   mibs:
     enabled: false
     accessMode: ReadWriteOnce
-    size: 10Mi
+    size: 100Mi
     claimName: mibs
   modules:
     enabled: false
     accessMode: ReadWriteOnce
-    size: 10Mi
+    size: 100Mi
     claimName: modules
   snmptraps:
     enabled: false
     accessMode: ReadWriteOnce
-    size: 10Mi
+    size: 100Mi
     claimName: snmptraps
   ssh_keys:
     enabled: false
     accessMode: ReadWriteOnce
-    size: 10Mi
+    size: 100Mi
     claimName: ssh-keys
   ssl:
     certs:
       enabled: false
       accessMode: ReadWriteOnce
-      size: 10Mi
+      size: 100Mi
       claimName: ssl-certs
     keys:
       enabled: false
       accessMode: ReadWriteOnce
-      size: 10Mi
+      size: 100Mi
       claimName: ssl-keys
     ssl_ca:
       enabled: false
       accessMode: ReadWriteOnce
-      size: 10Mi
+      size: 100Mi
       claimName: ssl-ssl-ca
 
 ## Configure resource requests and limits
@@ -208,3 +208,9 @@ affinity: {}
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 ##
 podAnnotations: {}
+
+zabbix-vars:
+  php_tz: Europe/Riga
+  zbx_server_name: zabbix
+  zbx_javagateway_enable: false
+  zbx_enable_snmp_traps: false
