@@ -114,12 +114,13 @@ mariadb:
       size: 8Gi
 
 ## Kubernetes configuration
-## For minikube, set this to NodePort, elsewhere use LoadBalancer or ClusterIP
+## Use LoadBalancer or ClusterIP
 ##
 service:
-  type: ClusterIP
-  # TCP
-  port: 10051
+  zabbix_server_mysql:
+    type: ClusterIP
+    # TCP
+    port: 10051
 
 ## If using an HTTPS-terminating load-balancer, the probes may need to behave
 ## like the balancer to prevent HTTP 302 responses.  According to the Kubernetes

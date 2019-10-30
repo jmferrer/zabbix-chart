@@ -7,7 +7,7 @@ Expand the name of the chart.
 {{- end -}}
 
 {{/*
-Create a default fully qualified app name.
+Create a default fully qualified app name for zabbix-server-mysql.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "zabbix-server-mysql.fullname" -}}
