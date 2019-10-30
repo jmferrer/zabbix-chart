@@ -4,7 +4,7 @@ metadata:
   name: {{ template "zabbix-server-mysql.fullname" . }}
   labels:
     app: "{{ template "zabbix-server-mysql.fullname" . }}"
-    chart: "{{ template "zabbix-server-mysql.chart" . }}"
+    chart: "{{ template "zabbix.chart" . }}"
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
 spec:
@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: "{{ template "zabbix-server-mysql.fullname" . }}"
-        chart: "{{ template "zabbix-server-mysql.chart" . }}"
+        chart: "{{ template "zabbix.chart" . }}"
         release: {{ .Release.Name | quote }}
 {{- if or .Values.podAnnotations }}
       annotations:
@@ -32,7 +32,7 @@ spec:
       {{- end }}
       containers:
       - name: zabbix-server-mysql
-        image: {{ template "zabbix-server-mysql.image" . }}
+        image: {{ template "zabbix_server_mysql.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         env:
         - name: DB_SERVER_HOST
