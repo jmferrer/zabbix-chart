@@ -32,7 +32,6 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 
-
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
@@ -58,6 +57,16 @@ Return the proper zabbix_web_nginx_mysql image name
 {{- $registryName := .Values.image.zabbix_web_nginx_mysql.registry -}}
 {{- $repositoryName := .Values.image.zabbix_web_nginx_mysql.repository -}}
 {{- $tag := .Values.image.zabbix_web_nginx_mysql.tag | toString -}}
+{{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+
+{{/*
+Return the proper zabbix_agent image name
+*/}}
+{{- define "zabbix_agent.image" -}}
+{{- $registryName := .Values.image.zabbix_agent.registry -}}
+{{- $repositoryName := .Values.image.zabbix_agent.repository -}}
+{{- $tag := .Values.image.zabbix_agent.tag | toString -}}
 {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
 

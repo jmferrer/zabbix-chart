@@ -15,7 +15,7 @@ spec:
   {{- if .Values.updateStrategy }}
   strategy: {{ toYaml .Values.updateStrategy | nindent 4 }}
   {{- end }}
-  replicas: {{ .Values.replicaCount.zabbix_server_mysql }}
+  replicas: 1
   template:
     metadata:
       labels:
@@ -31,6 +31,27 @@ spec:
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
       containers:
+      - name: zabbix-agent
+        image: {{ template "zabbix_agent.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        env:
+        - name: ZBX_SERVER_NAME
+          value: {{ .Values.zabbix_vars.zbx_server_name }}
+        - name: ZBX_TIMEOUT
+          value: "{{ .Values.zabbix_vars.zbx_timeout }}"
+        - name: ZBX_UNSAFEUSERPARAMETERS
+          value: "{{ .Values.zabbix_vars.zbx_unsafeuserparameters }}"
+        - name: ZBX_ENABLEREMOTECOMMANDS
+          value: "{{ .Values.zabbix_vars.zbx_enableremotecommands }}"
+        - name: ZBX_LOGREMOTECOMMANDS
+          value: "{{ .Values.zabbix_vars.zbx_logremotecommands }}"
+        ports:
+        - containerPort: 10050
+          name: agent
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
       - name: zabbix-server-mysql
         image: {{ template "zabbix_server_mysql.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
@@ -48,9 +69,13 @@ spec:
             secretKeyRef:
               name: {{ template "mariadb.fullname" . }}
               key: mariadb-password
+        - value: {{ .Values.zabbix_vars.zbx_server_name }}
+          name: ZBX_SERVER_NAME
+        - value: "{{ .Values.zabbix_vars.zbx_timeout }}"
+          name: ZBX_TIMEOUT
         ports:
         - name: trapper
-          containerPort: {{ .Values.service.zabbix_server_mysql.port }}
+          containerPort: 10051
         volumeMounts:
         {{- if .Values.persistence.alertscripts.enabled }}
         - mountPath: /var/lib/zabbix/alertscripts
@@ -165,8 +190,8 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-    {{- if .Values.nodeSelector }}
       nodeSelector:
+    {{- if .Values.nodeSelector }}
 {{ toYaml .Values.nodeSelector | indent 8 }}
       {{- end -}}
     {{- with .Values.affinity }}

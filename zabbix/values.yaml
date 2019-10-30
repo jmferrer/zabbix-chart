@@ -32,6 +32,21 @@ image:
     ##
     # pullSecrets:
     #   - myRegistryKeySecretName
+  zabbix_agent:
+    registry: docker.io
+    repository: zabbix/zabbix-agent
+    tag: ubuntu-4.4-latest
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ##
+    # pullSecrets:
+    #   - myRegistryKeySecretName
 
 
 ## String to partially override zabbix-server-mysql.fullname template (will maintain the release name)
@@ -70,7 +85,6 @@ updateStrategy:
 
 replicaCount:
   zabbix_web_nginx_mysql: 2
-  zabbix_server_mysql: 1
 
 ##
 ## MariaDB chart configuration
@@ -232,12 +246,13 @@ affinity: {}
 ##
 podAnnotations: {}
 
-zabbix-vars:
+zabbix_vars:
   php_tz: Europe/Riga
   zbx_server_name: zabbix
-  zbx_javagateway_enable: false
-  zbx_enable_snmp_traps: false
-
+  zbx_timeout: 10
+  zbx_unsafeuserparameters: "0"
+  zbx_enableremotecommands: "0"
+  zbx_logremotecommands: "0"
 ## Configure the ingress resource that allows you to access the
 ## WordPress installation. Set up the URL
 ## ref: http://kubernetes.io/docs/user-guide/ingress/
