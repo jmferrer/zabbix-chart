@@ -15,7 +15,7 @@ spec:
   {{- if .Values.updateStrategy }}
   strategy: {{ toYaml .Values.updateStrategy | nindent 4 }}
   {{- end }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.zabbix_server_mysql }}
   template:
     metadata:
       labels:
@@ -49,8 +49,8 @@ spec:
               name: {{ template "mariadb.fullname" . }}
               key: mariadb-password
         ports:
-        - name: zabbix-trapper
-          containerPort: 10051
+        - name: trapper
+          containerPort: {{ .Values.service.zabbix_server_mysql.port }}
         volumeMounts:
         {{- if .Values.persistence.alertscripts.enabled }}
         - mountPath: /var/lib/zabbix/alertscripts

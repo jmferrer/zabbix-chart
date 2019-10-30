@@ -19,6 +19,21 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 {{/*
+Create a default fully qualified app name for zabbix-server-mysql.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "zabbix-web-nginx-mysql.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- printf "%s-%s-%s" .Release.Name $name "web-nginx-mysql" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
@@ -39,7 +54,7 @@ Return the proper zabbix image name
 {{/*
 Return the proper zabbix_web_nginx_mysql image name
 */}}
-{{- define "zabbix-web-nginx-mysql.image" -}}
+{{- define "zabbix_web_nginx_mysql.image" -}}
 {{- $registryName := .Values.image.zabbix_web_nginx_mysql.registry -}}
 {{- $repositoryName := .Values.image.zabbix_web_nginx_mysql.repository -}}
 {{- $tag := .Values.image.zabbix_web_nginx_mysql.tag | toString -}}
@@ -94,7 +109,7 @@ but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else 
 {{/*
 Return the appropriate apiVersion for ingress.
 */}}
-{{- define "zabbix.ingress.apiVersion" -}}
+{{- define "zabbix-web.ingress.apiVersion" -}}
 {{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.GitVersion -}}
 {{- print "extensions/v1beta1" -}}
 {{- else -}}
