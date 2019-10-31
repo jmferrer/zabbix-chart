@@ -49,6 +49,9 @@ spec:
         - containerPort: 10050
           name: agent
           protocol: TCP
+        volumeMounts:
+        - mountPath: /var/lib/zabbix/userscripts
+          name: userscripts
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
@@ -77,46 +80,28 @@ spec:
         - name: trapper
           containerPort: 10051
         volumeMounts:
-        {{- if .Values.persistence.alertscripts.enabled }}
         - mountPath: /var/lib/zabbix/alertscripts
           name: alertscripts
-        {{- end }}
-        {{- if .Values.persistence.externalscripts.enabled }}
         - mountPath: /var/lib/zabbix/externalscripts
           name: externalscripts
-        {{- end }}
-        {{- if .Values.persistence.enc.enabled }}
         - mountPath: /var/lib/zabbix/enc
           name: enc
-        {{- end }}
-        {{- if .Values.persistence.mibs.enabled }}
         - mountPath: /var/lib/zabbix/mibs
           name: mibs
-        {{- end }}
-        {{- if .Values.persistence.modules.enabled }}
         - mountPath: /var/lib/zabbix/modules
           name: modules
-        {{- end }}
-        {{- if .Values.persistence.snmptraps.enabled }}
         - mountPath: /var/lib/zabbix/snmptraps
           name: snmptraps
-        {{- end }}
-        {{- if .Values.persistence.ssh_keys.enabled }}
         - mountPath: /var/lib/zabbix/ssh_keys
           name: ssh-keys
-        {{- end }}
-        {{- if .Values.persistence.ssl.certs.enabled }}
         - mountPath: /var/lib/zabbix/ssl/certs
           name: ssl-certs
-        {{- end }}
-        {{- if .Values.persistence.ssl.keys.enabled }}
         - mountPath: /var/lib/zabbix/ssl/keys
           name: ssl-keys
-        {{- end }}
-        {{- if .Values.persistence.ssl.ssl_ca.enabled }}
         - mountPath: /var/lib/zabbix/ssl/ssl_ca
           name: ssl-ssl-ca
-        {{- end }}
+        - mountPath: /var/lib/zabbix/userscripts
+          name: userscripts
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       volumes:
@@ -187,6 +172,13 @@ spec:
       {{- if .Values.persistence.ssl.ssl_ca.enabled }}
         persistentVolumeClaim:
           claimName: {{ .Values.persistence.ssl.ssl_ca.claimName }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: userscripts
+      {{- if .Values.persistence.userscripts.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.userscripts.claimName }}
       {{- else }}
         emptyDir: {}
       {{- end }}
