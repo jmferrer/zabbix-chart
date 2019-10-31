@@ -49,15 +49,23 @@ image:
     #   - myRegistryKeySecretName
 
 
-## String to partially override zabbix-server-mysql.fullname template (will maintain the release name)
+## String to partially override fullname templates (will maintain the release name)
 ##
-# nameOverride:
+nameOverride: {}
+#   chart:
+#   zabbix_server_mysql:
+#   zabbix_web_nginx_mysql:
 
-## String to fully override zabbix-server-mysql.fullname template
+
+## String to fully override fullname templates
 ##
-# fullnameOverride:
+fullnameOverride: {}
+#   chart:
+#   zabbix_server_mysql:
+#   zabbix_web_nginx_mysql:
 
-## Set up update strategy for wordpress installation. Set to Recreate if you use persistent volume that cannot be mounted by more than one pods to makesure the pods is destroyed first.
+
+## Set up update strategy for zabbix installation. Set to Recreate if you use persistent volume that cannot be mounted by more than one pods to makesure the pods is destroyed first.
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
 ## Example:
 ## updateStrategy:
@@ -66,22 +74,15 @@ image:
 ##    maxSurge: 25%
 ##    maxUnavailable: 25%
 updateStrategy:
-  type: RollingUpdate
+  zabbix_server_mysql:
+    type: Recreate
+  zabbix_web_nginx_mysql:
+    type: RollingUpdate
 
 ## Use an alternate scheduler, e.g. "stork".
 ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
 ##
 # schedulerName:
-
-## SMTP mail delivery configuration
-## ref: https://github.com/bitnami/bitnami-docker-wordpress/#smtp-configuration
-##
-# smtpHost:
-# smtpPort:
-# smtpUser:
-# smtpPassword:
-# smtpUsername:
-# smtpProtocol:
 
 replicaCount:
   zabbix_web_nginx_mysql: 2
@@ -104,7 +105,8 @@ mariadb:
     user: zabbix
     ## If the password is not specified, mariadb will generates a random password
     ##
-    # password:
+    ## Fix password because mariadb chart under certain conditions changes it when upgrading
+    password: zabbix
 
   ## MariaDB admin password
   ## ref: https://github.com/bitnami/bitnami-docker-mariadb/blob/master/README.md#setting-the-root-password-on-first-run
@@ -167,19 +169,8 @@ service:
     port: 10051
   zabbix_web_nginx_mysql:
     type: ClusterIP
-    # TCP
+    # HTTP
     port: 80
-
-## If using an HTTPS-terminating load-balancer, the probes may need to behave
-## like the balancer to prevent HTTP 302 responses.  According to the Kubernetes
-## docs, 302 should be considered "successful", but this issue on GitHub
-## (https://github.com/kubernetes/kubernetes/issues/47893) shows that it isn't.
-# livenessProbeHeaders:
-# - name: X-Forwarded-Proto
-#   value: https
-# readinessProbeHeaders:
-# - name: X-Forwarded-Proto
-#   value: https
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -246,7 +237,7 @@ persistence:
       size: 100Mi
       claimName: ssl-ssl-ca
   userscripts:
-    enabled: true
+    enabled: false
     accessMode: ReadWriteOnce
     size: 200Mi
     claimName: userscripts
@@ -282,17 +273,47 @@ podAnnotations: {}
 zabbix_vars:
   php_tz: Europe/Riga
   zbx_server_name: zabbix
-  zbx_timeout: 10
+  zbx_timeout: 3
   zbx_unsafeuserparameters: "0"
   zbx_enableremotecommands: "0"
   zbx_logremotecommands: "0"
+
+## Configure extra options for liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
+zabbix_web_nginx:
+  livenessProbe:
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+zabbix_server_mysql:
+  livenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
 ## Configure the ingress resource that allows you to access the
 ## WordPress installation. Set up the URL
 ## ref: http://kubernetes.io/docs/user-guide/ingress/
 ##
 ingress:
   ## Set to true to enable ingress record generation
-  enabled: true
+  enabled: false
 
   ## Set this to true in order to add the corresponding annotations for cert-manager
   certManager: false
@@ -312,12 +333,12 @@ ingress:
   ## The list of additional hostnames to be covered with this ingress record.
   ## Most likely the hostname above will be enough, but in the event more hosts are needed, this is an array
   ## hosts:
-  ## - name: wordpress.local
+  ## - name: zabbix.local
   ##   path: /
 
   ## The tls configuration for the ingress
   ## see: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
   ## tls:
   ## - hosts:
-  ##     - wordpress.local
-  ##   secretName: wordpress.local-tls
+  ##     - zabbix.local
+  ##   secretName: zabbix.local-tls

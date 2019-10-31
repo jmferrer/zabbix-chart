@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "zabbix.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.nameOverride.chart | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -11,22 +11,22 @@ Create a default fully qualified app name for zabbix-server-mysql.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "zabbix-server-mysql.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- if .Values.fullnameOverride.zabbix_server_mysql -}}
+{{- .Values.fullnameOverride.zabbix_server_mysql | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- $name := default .Chart.Name .Values.nameOverride.Zabbix_server_mysql -}}
 {{- printf "%s-%s-%s" .Release.Name $name "server-mysql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 {{/*
-Create a default fully qualified app name for zabbix-server-mysql.
+Create a default fully qualified app name for zabbix-web-nginx-mysql.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "zabbix-web-nginx-mysql.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- if .Values.fullnameOverride.zabbix_web_nginx_mysql -}}
+{{- .Values.fullnameOverride.zabbix_web_nginx_mysql | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- $name := default .Chart.Name .Values.nameOverride.zabbix_web_nginx_mysql -}}
 {{- printf "%s-%s-%s" .Release.Name $name "web-nginx-mysql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
